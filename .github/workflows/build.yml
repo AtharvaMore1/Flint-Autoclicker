@@ -38,6 +38,7 @@ jobs:
         run: |
           $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
           $env:QT_QUICK_BACKEND = 'software'
+          $env:QT_FORCE_STDERR_LOGGING = '1'
           Remove-Item Env:QT_PLUGIN_PATH, Env:QML_IMPORT_PATH, Env:QML2_IMPORT_PATH -ErrorAction SilentlyContinue
           $app = Start-Process -FilePath "$pwd/dist/FlintAutoClicker.exe" -WorkingDirectory "$pwd/dist" -WindowStyle Hidden -PassThru -RedirectStandardError "$env:RUNNER_TEMP/startup.log"
           try {

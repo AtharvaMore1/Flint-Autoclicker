@@ -32,6 +32,10 @@ def main() -> None:
         [deploy, "--qmldir", str(ROOT / "qml"), "--no-translations", "--dir", str(OUTPUT), str(OUTPUT / EXE.name)],
         check=True,
     )
+    # MSYS2 Qt otherwise searches its original installation for QML modules.
+    (OUTPUT / "qt.conf").write_text(
+        "[Paths]\nPrefix=.\nPlugins=.\nQmlImports=qml\n", encoding="utf-8"
+    )
 
     # MSYS2's Qt deployer does not necessarily include the GCC runtime DLLs.
     bin_dir = Path(deploy).resolve().parent
