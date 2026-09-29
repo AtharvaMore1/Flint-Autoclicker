@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
 
-// Phosphor Icons, MIT. See THIRD_PARTY_NOTICES.md.
+// Phosphor Icons, MIT. See README.md for the license.
 Item {
     id: glyph
     property bool save: false

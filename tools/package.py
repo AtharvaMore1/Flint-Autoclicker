@@ -27,7 +27,6 @@ def main() -> None:
     OUTPUT.mkdir()
     shutil.copy2(EXE, OUTPUT / EXE.name)
     shutil.copy2(ROOT / "README.md", OUTPUT / "README.md")
-    shutil.copy2(ROOT / "THIRD_PARTY_NOTICES.md", OUTPUT / "THIRD_PARTY_NOTICES.md")
 
     subprocess.run(
         [deploy, "--qmldir", str(ROOT / "qml"), "--no-translations", "--dir", str(OUTPUT), str(OUTPUT / EXE.name)],

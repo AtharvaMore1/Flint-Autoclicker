@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
 
-// Mouse paths from Phosphor Icons (MIT). See THIRD_PARTY_NOTICES.md.
+// Mouse paths from Phosphor Icons (MIT). See README.md for the license.
 Item {
     id: glyph
     property int buttonPart: 0 // 0 left, 1 middle, 2 right

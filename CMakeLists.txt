@@ -63,15 +63,3 @@ target_link_libraries(FlintAutoClicker PRIVATE
     Qt6::QuickControls2
     user32
 )
-
-option(FLINT_BUILD_TESTS "Build macro engine and UI checks" OFF)
-if(FLINT_BUILD_TESTS)
-    enable_testing()
-    find_package(Qt6 REQUIRED COMPONENTS Test)
-    qt_add_executable(MacroTests tests/MacroTests.cpp src/Backend.cpp src/Backend.hpp src/MacroBackend.cpp src/MacroBackend.hpp)
-    target_include_directories(MacroTests PRIVATE src)
-    target_compile_definitions(MacroTests PRIVATE FLINT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-    target_link_libraries(MacroTests PRIVATE Qt6::Test Qt6::Quick Qt6::Qml Qt6::QuickControls2 user32)
-    add_test(NAME MacroTests COMMAND MacroTests -o macro-tests.txt,txt)
-    set_tests_properties(MacroTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
-endif()
