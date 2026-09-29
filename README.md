@@ -2,6 +2,8 @@
 
 A Windows autoclicker and macro recorder with a clean, customizable interface.
 
+[Download for Windows](https://github.com/AtharvaMore1/Flint-Autoclicker/releases/latest/download/FlintAutoClicker.exe) — double-click to run, no installation needed.
+
 ## Features
 
 ### Autoclicker

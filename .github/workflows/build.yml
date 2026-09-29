@@ -50,11 +50,50 @@ jobs:
           } finally {
             if (!$app.HasExited) { Stop-Process -Id $app.Id }
           }
-      - name: Upload Windows app
+      - name: Build portable executable
+        run: python tools/portable.py
+      - name: Check portable executable
+        shell: pwsh
+        run: |
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+          $env:QT_QUICK_BACKEND = 'software'
+          $env:QT_FORCE_STDERR_LOGGING = '1'
+          Remove-Item Env:QT_PLUGIN_PATH, Env:QML_IMPORT_PATH, Env:QML2_IMPORT_PATH -ErrorAction SilentlyContinue
+          $downloadDir = Join-Path $env:RUNNER_TEMP 'Portable download ü with spaces'
+          New-Item -ItemType Directory -Path $downloadDir | Out-Null
+          $download = Join-Path $downloadDir 'My renamed autoclicker.exe'
+          Copy-Item build/portable/FlintAutoClicker.exe -Destination $download
+          function Check-Launch {
+            $launcher = Start-Process -FilePath $download -WorkingDirectory $downloadDir -WindowStyle Hidden -PassThru
+            $child = $null
+            try {
+              $deadline = (Get-Date).AddSeconds(60)
+              while ((Get-Date) -lt $deadline -and !$launcher.HasExited) {
+                $child = Get-CimInstance Win32_Process -Filter "ParentProcessId = $($launcher.Id) AND Name = 'FlintAutoClicker.exe'" | Select-Object -First 1
+                if ($child) { break }
+                Start-Sleep -Seconds 1
+              }
+              if (!$child) { throw 'Portable download did not launch the app.' }
+              Start-Sleep -Seconds 3
+              if (!(Get-Process -Id $child.ProcessId -ErrorAction SilentlyContinue)) { throw 'Portable app exited during startup.' }
+              return $child.ExecutablePath
+            } finally {
+              if ($child) { Stop-Process -Id $child.ProcessId -ErrorAction SilentlyContinue }
+              if (!$launcher.WaitForExit(5000)) { Stop-Process -Id $launcher.Id }
+            }
+          }
+          $appPath = Check-Launch
+          $null = Check-Launch
+          $cacheRoot = [IO.Path]::GetFullPath("$env:LOCALAPPDATA/FlintAutoClicker/Runtime") + [IO.Path]::DirectorySeparatorChar
+          if (!$appPath.StartsWith($cacheRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unexpected cache path.' }
+          Remove-Item -LiteralPath (Join-Path (Split-Path $appPath) 'Qt6Core.dll')
+          $null = Check-Launch
+          Write-Output 'First launch, cached launch, renamed Unicode path, and missing-file recovery passed.'
+      - name: Upload portable executable
         uses: actions/upload-artifact@v4
         with:
-          name: FlintAutoClicker-windows-x64
-          path: dist/
+          name: FlintAutoClicker-portable-exe
+          path: build/portable/FlintAutoClicker.exe
           if-no-files-found: error
 
   release:
@@ -64,40 +103,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: FlintAutoClicker-windows-x64
-          path: dist
-      - name: Build Windows installer
-        shell: pwsh
-        env:
-          RELEASE_TAG: ${{ github.ref_name }}
-        run: |
-          $version = $env:RELEASE_TAG.Substring(1)
-          & "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe" "/DAppVersion=$version" tools/installer.iss
-          if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
-      - name: Check installed app starts
-        shell: pwsh
-        run: |
-          $setup = Get-ChildItem installer/*-Setup.exe | Select-Object -First 1
-          $installDir = "$env:RUNNER_TEMP/FlintAutoClicker-installed"
-          $install = Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=`"$installDir`"" -WindowStyle Hidden -Wait -PassThru
-          if ($install.ExitCode -ne 0) { throw "Installer failed (exit code $($install.ExitCode))." }
-          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
-          $env:QT_QUICK_BACKEND = 'software'
-          $env:QT_FORCE_STDERR_LOGGING = '1'
-          Remove-Item Env:QT_PLUGIN_PATH, Env:QML_IMPORT_PATH, Env:QML2_IMPORT_PATH -ErrorAction SilentlyContinue
-          $app = Start-Process -FilePath "$installDir/FlintAutoClicker.exe" -WorkingDirectory $installDir -WindowStyle Hidden -PassThru -RedirectStandardError "$env:RUNNER_TEMP/installed-startup.log"
-          try {
-            Start-Sleep -Seconds 5
-            if ($app.HasExited) {
-              Get-Content "$env:RUNNER_TEMP/installed-startup.log"
-              throw 'Installed app exited during startup.'
-            }
-          } finally {
-            if (!$app.HasExited) { Stop-Process -Id $app.Id }
-          }
+          name: FlintAutoClicker-portable-exe
+          path: portable
       - name: Publish Windows release
         shell: pwsh
         env:
@@ -105,8 +114,6 @@ jobs:
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          $archive = "FlintAutoClicker-$env:RELEASE_TAG-windows-x64.zip"
-          Compress-Archive -Path dist/* -DestinationPath $archive
           $notes = @'
           ## FlintAutoClicker for Windows
 
@@ -117,11 +124,9 @@ jobs:
 
           ### Download
 
-          Download the Setup.exe below and run it to install FlintAutoClicker. All required files are included; no Qt installation or administrator access is needed.
+          Download FlintAutoClicker.exe below and double-click to open it. No installation, manual extraction, Qt installation, or administrator access is needed. The first launch automatically prepares its supporting files; later launches reuse them.
 
-          The ZIP is also available for portable use: extract the entire folder and run FlintAutoClicker.exe, keeping its DLLs and subfolders beside it.
           '@
           $notes | Set-Content -Path release-notes.md -Encoding utf8
-          $setup = Get-ChildItem installer/*-Setup.exe | Select-Object -First 1
-          gh release create "$env:RELEASE_TAG" "$archive" "$($setup.FullName)" --repo "$env:GH_REPO" --verify-tag --title "FlintAutoClicker $env:RELEASE_TAG" --notes-file release-notes.md
+          gh release create "$env:RELEASE_TAG" "portable/FlintAutoClicker.exe" --repo "$env:GH_REPO" --verify-tag --title "FlintAutoClicker $env:RELEASE_TAG" --notes-file release-notes.md
           if ($LASTEXITCODE -ne 0) { throw 'Could not publish the release.' }
