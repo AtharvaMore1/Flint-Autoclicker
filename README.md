@@ -2,7 +2,7 @@
 
 A Windows autoclicker and macro recorder with a clean, customizable interface.
 
-[Download for Windows](https://github.com/AtharvaMore1/Flint-Autoclicker/releases/latest/download/FlintAutoClicker.exe) — double-click to run, no installation needed.
+[Download for Windows](https://github.com/AtharvaMore1/Flint-Autoclicker/releases/latest/download/FlintAutoClicker.exe)
 
 ## Features
 
@@ -25,7 +25,7 @@ A Windows autoclicker and macro recorder with a clean, customizable interface.
 ### Interface
 
 - Light and dark themes.
-- Remembered settings and macro drafts.
+- Save settings and macro drafts.
 
 Interface icons by [Phosphor Icons](https://phosphoricons.com/), used under the MIT license.
 
