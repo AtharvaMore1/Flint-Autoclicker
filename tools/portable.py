@@ -24,7 +24,6 @@ def main() -> None:
         '.Set CompressionMemory=21',
         '.Set MaxCabinetSize=0',
         '.Set MaxFolderSize=0',
-        '.Set GenerateInf=off',
     ]
     manifest = []
     for path in files:
