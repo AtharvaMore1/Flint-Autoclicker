@@ -1,6 +1,10 @@
 // Small Windows-only launcher. The actual app and Qt stay in the C++/QML app.
+#ifndef UNICODE
 #define UNICODE
+#endif
+#ifndef _UNICODE
 #define _UNICODE
+#endif
 #define NOMINMAX
 #include <windows.h>
 #include <shlobj.h>
