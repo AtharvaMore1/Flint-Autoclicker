@@ -299,7 +299,7 @@ Basic.Pane {
                     dark: panel.dark; enabled: !macro.busy
                     onActivated: function(index) { macro.loops = index === 0 ? 0 : Math.max(1, loopCount.value) }
                 }
-                NumberField { id: loopCount; width: 64; height: 30; from: 1; to: 1000000; value: Math.max(1, macro.loops); dark: panel.dark; enabled: !macro.busy && macro.loops > 0; onValueModified: macro.loops = value }
+                NumberField { id: loopCount; width: 64; height: 30; from: 1; to: 1000000; value: Math.max(1, macro.loops); dark: panel.dark; hint: "Number of playback loops"; enabled: !macro.busy && macro.loops > 0; onValueModified: macro.loops = value }
             }
             Row {
                 width: parent.width; height: 26; spacing: 8
@@ -307,11 +307,8 @@ Basic.Pane {
                 NumberField {
                     objectName: "loopGapField"
                     width: 90; height: 26; from: 0; to: 3600000
-                    value: macro.loopGapMs; dark: panel.dark; enabled: !macro.busy && macro.loops !== 1
+                    value: macro.loopGapMs; dark: panel.dark; hint: "Pause between loops"; enabled: !macro.busy && macro.loops !== 1
                     onValueModified: macro.loopGapMs = value
-                    Basic.ToolTip.visible: gapHover.hovered
-                    Basic.ToolTip.text: "Pause between loops. Independent of playback speed."
-                    HoverHandler { id: gapHover }
                 }
                 Text { anchors.verticalCenter: parent.verticalCenter; text: "ms between loops"; color: panel.muted; font.pixelSize: 11 }
             }
@@ -339,7 +336,7 @@ Basic.Pane {
                     font.pixelSize: 12
                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                     background: Rectangle { radius: 7; color: macro.customSpeed ? (panel.dark ? "#38322f" : "#f8e5d6") : (panel.dark ? "#242528" : "#e8e9ec"); border.width: macro.customSpeed ? 1 : 0; border.color: panel.dark ? "#a66a45" : "#dba47d" }
-                    Basic.ToolTip.visible: hovered; Basic.ToolTip.text: "Click to enter a custom speed (0–10×)"
+                    Basic.ToolTip.visible: hovered; Basic.ToolTip.text: "Playback speed (0–10×)"; Basic.ToolTip.delay: 600
                     onTextEdited: userEdited = true
                     onEditingFinished: {
                         if (userEdited) {
@@ -405,7 +402,7 @@ Basic.Pane {
                 width: parent.width; height: 30
                 visible: panel.draft.type === "press" || (panel.draft.type === "hold" && panel.draft.button === 0)
                 Text { width: 100; anchors.verticalCenter: parent.verticalCenter; text: "Key / shortcut"; color: panel.ink }
-                Basic.TextField { width: parent.width - 100; height: 30; text: panel.draft.key || ""; placeholderText: "E or Ctrl+C"; onTextEdited: panel.update("key", text) }
+                Basic.TextField { width: parent.width - 100; height: 30; text: panel.draft.key || ""; placeholderText: "E or Ctrl+C"; Basic.ToolTip.visible: hovered; Basic.ToolTip.text: "Key or shortcut to send"; Basic.ToolTip.delay: 600; onTextEdited: panel.update("key", text) }
             }
             Row {
                 width: parent.width; height: 30
@@ -417,34 +414,34 @@ Basic.Pane {
                 width: parent.width; height: 30; spacing: 6
                 visible: panel.draft.type !== "wait" && panel.fixedPosition
                 Text { anchors.verticalCenter: parent.verticalCenter; text: "X"; color: panel.ink }
-                NumberField { width: 76; height: 30; from: -100000; to: 100000; value: panel.draft.x || 0; dark: panel.dark; onValueModified: panel.update("x", value) }
+                NumberField { width: 76; height: 30; from: -100000; to: 100000; value: panel.draft.x || 0; dark: panel.dark; hint: "Horizontal screen position"; onValueModified: panel.update("x", value) }
                 Text { anchors.verticalCenter: parent.verticalCenter; text: "Y"; color: panel.ink }
-                NumberField { width: 76; height: 30; from: -100000; to: 100000; value: panel.draft.y || 0; dark: panel.dark; onValueModified: panel.update("y", value) }
+                NumberField { width: 76; height: 30; from: -100000; to: 100000; value: panel.draft.y || 0; dark: panel.dark; hint: "Vertical screen position"; onValueModified: panel.update("y", value) }
                 FlintButton { width: 82; height: 30; label: "Pick location"; dark: panel.dark; onClicked: panel.pickRequested() }
             }
             Row {
                 width: parent.width; height: 30
                 visible: panel.draft.type === "wait" || panel.draft.type === "hold"
                 Text { width: 124; anchors.verticalCenter: parent.verticalCenter; text: "Duration (ms)"; color: panel.ink }
-                NumberField { width: parent.width - 124; height: 30; from: 0; to: panel.draft.type === "wait" ? 7200000 : 3600000; value: panel.draft.durationMs || 0; dark: panel.dark; onValueModified: panel.update("durationMs", value) }
+                NumberField { width: parent.width - 124; height: 30; from: 0; to: panel.draft.type === "wait" ? 7200000 : 3600000; value: panel.draft.durationMs || 0; dark: panel.dark; hint: panel.draft.type === "wait" ? "Time to wait in milliseconds" : "Time to hold the input"; onValueModified: panel.update("durationMs", value) }
             }
             Row {
                 width: parent.width; height: 30
                 visible: panel.draft.type === "click" || panel.draft.type === "press"
                 Text { width: 124; anchors.verticalCenter: parent.verticalCenter; text: panel.draft.type === "click" ? "Click count" : "Press count"; color: panel.ink }
-                NumberField { width: parent.width - 124; height: 30; from: 1; to: 2147483647; value: panel.draft.count || 1; dark: panel.dark; onValueModified: panel.update("count", value) }
+                NumberField { width: parent.width - 124; height: 30; from: 1; to: 2147483647; value: panel.draft.count || 1; dark: panel.dark; hint: panel.draft.type === "click" ? "Number of clicks" : "Number of key presses"; onValueModified: panel.update("count", value) }
             }
             Row {
                 width: parent.width; height: 30
                 visible: (panel.draft.type === "click" || panel.draft.type === "press") && panel.draft.count > 1
                 Text { width: 124; anchors.verticalCenter: parent.verticalCenter; text: "Repeat gap (ms)"; color: panel.ink }
-                NumberField { width: parent.width - 124; height: 30; from: 0; to: 3600000; value: panel.draft.intervalMs || 0; dark: panel.dark; onValueModified: panel.update("intervalMs", value) }
+                NumberField { width: parent.width - 124; height: 30; from: 0; to: 3600000; value: panel.draft.intervalMs || 0; dark: panel.dark; hint: "Time between repeated actions"; onValueModified: panel.update("intervalMs", value) }
             }
             Row {
                 width: parent.width; height: 30
                 visible: panel.draft.type === "scroll"
                 Text { width: 124; anchors.verticalCenter: parent.verticalCenter; text: "Scroll (120 = notch)"; color: panel.ink; font.pixelSize: 11 }
-                NumberField { width: parent.width - 124; height: 30; from: -120000; to: 120000; value: panel.draft.amount || 0; dark: panel.dark; onValueModified: panel.update("amount", value) }
+                NumberField { width: parent.width - 124; height: 30; from: -120000; to: 120000; value: panel.draft.amount || 0; dark: panel.dark; hint: "Scroll amount; 120 is one notch"; onValueModified: panel.update("amount", value) }
             }
             Basic.CheckBox { visible: panel.draft.type === "scroll"; text: "Horizontal scrolling"; checked: panel.draft.horizontal || false; onClicked: panel.update("horizontal", checked) }
             Text { width: parent.width; visible: panel.keyboardAction; text: panel.fixedPosition ? "Moves the pointer before pressing. Keyboard input goes to the focused app." : "F8–F10 are reserved for macro controls."; color: panel.muted; font.pixelSize: 11; wrapMode: Text.WordWrap }

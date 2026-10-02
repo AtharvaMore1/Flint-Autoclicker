@@ -34,6 +34,7 @@ qt_add_resources(FlintAutoClicker app_icon
 
 set_source_files_properties(qml/Main.qml PROPERTIES QT_RESOURCE_ALIAS Main.qml)
 set_source_files_properties(qml/FlintButton.qml PROPERTIES QT_RESOURCE_ALIAS FlintButton.qml)
+set_source_files_properties(qml/HeaderTabs.qml PROPERTIES QT_RESOURCE_ALIAS HeaderTabs.qml)
 set_source_files_properties(qml/SegmentedControl.qml PROPERTIES QT_RESOURCE_ALIAS SegmentedControl.qml)
 set_source_files_properties(qml/MacroPanel.qml PROPERTIES QT_RESOURCE_ALIAS MacroPanel.qml)
 set_source_files_properties(qml/FlintComboBox.qml PROPERTIES QT_RESOURCE_ALIAS FlintComboBox.qml)
@@ -48,6 +49,7 @@ qt_add_qml_module(FlintAutoClicker
     QML_FILES
         qml/Main.qml
         qml/FlintButton.qml
+        qml/HeaderTabs.qml
         qml/SegmentedControl.qml
         qml/MacroPanel.qml
         qml/FlintComboBox.qml

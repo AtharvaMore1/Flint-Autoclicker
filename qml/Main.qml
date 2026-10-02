@@ -50,7 +50,6 @@ Basic.ApplicationWindow {
         color: backend.dark ? "#1e1f21" : "#ffffff"
 
         Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 10; color: parent.color }
-        Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 1; color: backend.dark ? "#323336" : "#e8e9eb" }
         MouseArea { anchors.fill: parent; onPressed: { root.contentItem.forceActiveFocus(); root.startSystemMove() } }
 
         Text {
@@ -74,14 +73,15 @@ Basic.ApplicationWindow {
             FlintButton { width: 34; height: 30; label: "−"; dark: backend.dark; quiet: true; onClicked: root.showMinimized() }
             FlintButton { width: 34; height: 30; label: "×"; dark: backend.dark; quiet: true; destructiveHover: true; onClicked: root.close() }
         }
-        Row {
+        HeaderTabs {
             anchors.left: parent.left
-            anchors.leftMargin: 14
+            anchors.right: parent.right
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 4
-            spacing: 6
-            FlintButton { height: 28; label: "Autoclicker"; selected: root.activeTab === 0; dark: backend.dark; enabled: !macro.busy; onClicked: root.activeTab = 0 }
-            FlintButton { height: 28; label: "Macro"; selected: root.activeTab === 1; dark: backend.dark; enabled: !backend.running; onClicked: root.activeTab = 1 }
+            currentIndex: root.activeTab
+            dark: backend.dark
+            autoclickerEnabled: !macro.busy
+            macroEnabled: !backend.running
+            onSelected: function(index) { root.activeTab = index }
         }
         FlintButton {
             anchors.right: parent.right
@@ -203,7 +203,7 @@ Basic.ApplicationWindow {
                         height: 30
                         Text { anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter; text: "Interval"; color: root.muted; font.pixelSize: 13 }
                         Text { id: intervalUnit; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; width: 32; text: "ms"; color: root.muted; font.pixelSize: 13 }
-                        NumberField { anchors.right: intervalUnit.left; anchors.rightMargin: 6; width: 104; height: 30; from: 1; to: 3600000; value: backend.intervalMs; dark: backend.dark; enabled: !backend.running; onValueModified: backend.intervalMs = value }
+                        NumberField { anchors.right: intervalUnit.left; anchors.rightMargin: 6; width: 104; height: 30; from: 1; to: 3600000; value: backend.intervalMs; dark: backend.dark; hint: "Time between clicks"; enabled: !backend.running; onValueModified: backend.intervalMs = value }
                     }
                     Item {
                         width: parent.width
@@ -211,7 +211,7 @@ Basic.ApplicationWindow {
                         Text { anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter; text: "Random offset"; color: root.muted; font.pixelSize: 13 }
                         FlintButton { id: offsetToggle; anchors.right: parent.right; width: 56; height: 30; label: backend.randomOffset ? "On" : "Off"; selected: backend.randomOffset; dark: backend.dark; enabled: !backend.running; onClicked: backend.randomOffset = !backend.randomOffset }
                         Text { id: offsetUnit; anchors.right: offsetToggle.left; anchors.rightMargin: 6; anchors.verticalCenter: parent.verticalCenter; width: 38; text: "± ms"; color: root.muted; font.pixelSize: 13 }
-                        NumberField { anchors.right: offsetUnit.left; anchors.rightMargin: 6; width: 96; height: 30; from: 0; to: Math.max(0, backend.intervalMs - 1); value: backend.offsetMs; dark: backend.dark; enabled: backend.randomOffset && !backend.running; onValueModified: backend.offsetMs = value }
+                        NumberField { anchors.right: offsetUnit.left; anchors.rightMargin: 6; width: 96; height: 30; from: 0; to: Math.max(0, backend.intervalMs - 1); value: backend.offsetMs; dark: backend.dark; hint: "Maximum timing variation"; enabled: backend.randomOffset && !backend.running; onValueModified: backend.offsetMs = value }
                     }
                 }
             }
@@ -235,7 +235,7 @@ Basic.ApplicationWindow {
                             dark: backend.dark; enabled: !backend.running
                             onActivated: function(index) { backend.repeatForever = index === 0 }
                         }
-                        NumberField { anchors.right: parent.right; width: 108; height: 32; from: 1; to: 100000000; value: backend.repeatCount; dark: backend.dark; enabled: !backend.repeatForever && !backend.running; onValueModified: backend.repeatCount = value }
+                        NumberField { anchors.right: parent.right; width: 108; height: 32; from: 1; to: 100000000; value: backend.repeatCount; dark: backend.dark; hint: "Number of actions to repeat"; enabled: !backend.repeatForever && !backend.running; onValueModified: backend.repeatCount = value }
                     }
                 }
             }

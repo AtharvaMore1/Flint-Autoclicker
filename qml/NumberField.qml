@@ -4,12 +4,16 @@ import QtQuick.Controls.Basic as Basic
 Basic.SpinBox {
     id: field
     property bool dark: true
+    property string hint: ""
     editable: true
     implicitWidth: 112
     implicitHeight: 36
     font.family: "Segoe UI"
     font.pixelSize: 13
     font.weight: Font.DemiBold
+    Basic.ToolTip.visible: hovered && hint.length > 0
+    Basic.ToolTip.text: hint
+    Basic.ToolTip.delay: 600
 
     function commitInput() {
         const parsed = valueFromText(input.text, locale)
